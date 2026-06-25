@@ -1,3 +1,5 @@
+import os
+
 EMPTY = 0
 
 WP = 1
@@ -87,10 +89,22 @@ def pawn_move(from_sq, to_sq):
 				return board[to_sq] < 0
 	return False
 
+def bishop_move(from_sq, to_sq):
+	pass
+
 def knight_move(from_sq, to_sq):
 	moves = {6,10,15,17}
 	diff = to_sq - from_sq
 	return True if abs(diff) in moves else False
+
+def rook_move(from_sq, to_sq):
+	pass
+
+def queen_move(from_sq, to_sq):
+	pass
+
+def king_move(from_sq, to_sq):
+	pass
 
 board = [
 	WR, WN, WB, WQ, WK, WB, WN, WR,
@@ -127,7 +141,7 @@ def make_move(board, move):
 		print("Not your piece.")
 		return
 
-	#pawn move
+	# pawn move
 	if abs(piece) == 1:
 		if pawn_move(from_sq, to_sq) is False:
 			print("Invalid move.")
@@ -136,13 +150,29 @@ def make_move(board, move):
 			print("You've reached a promotion square")
 			print("What piece do you want?")
 			print("Enter 2 for bishop\n 3 for knight\n 4 for rook\n or 5 for queen")
-			from_sq = int(input("Choice:"))
+			board[from_sq] = int(input("Choice:"))
 
-	#knight move
+	# bishop move
+	if abs(piece) == 2:
+		pass
+
+	# knight move
 	if abs(piece) == 3:
 		if knight_move(from_sq, to_sq) is False:
 			print("Invalid move.")
 			return
+
+	# rook move
+	if abs(piece) == 4:
+		pass
+
+	# queen move
+	if abs(piece) == 5:
+		pass
+
+	# king move
+	if abs(piece) == 6:
+		pass
 
 	board[to_sq] = board[from_sq]
 	board[from_sq] = EMPTY
@@ -150,7 +180,10 @@ def make_move(board, move):
     # flip turn for next loop
 	current_turn = -current_turn 
 
+
 while True:
+	#print("\033[2J\033[H")
+	os.system("clear")
 	print_board(board)
 
 	if current_turn == 1:
