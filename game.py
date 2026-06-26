@@ -90,18 +90,33 @@ def pawn_move(from_sq, to_sq):
 	return False
 
 def bishop_move(from_sq, to_sq):
-	pass
+	moves = {7,9}
+
+	if from_sq//8 == to_sq//8:
+		return False
+
+	if from_sq%8 == to_sq%8:
+		return False
 
 def knight_move(from_sq, to_sq):
 	moves = {6,10,15,17}
 	diff = to_sq - from_sq
-	return True if abs(diff) in moves else False
+	if abs(diff) in moves:
+		if from_sq//8 == to_sq//8:
+			return False
+		if from_sq%8 == to_sq%8:
+			return False
+		if ((from_sq%8) - (to_sq%8)) == 2 and abs((from_sq//2) - (to_sq//2)) == 1:
+			return True
+		if ((from_sq%8) - (to_sq%8)) == 1 and abs((from_sq//2) - (to_sq//2)) == 2:
+			return True
+	return False
 
 def rook_move(from_sq, to_sq):
-	pass
+	moves = {1,8}
 
 def queen_move(from_sq, to_sq):
-	pass
+	moves = {1,7,8,9}
 
 def king_move(from_sq, to_sq):
 	pass
