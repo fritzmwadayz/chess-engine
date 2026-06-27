@@ -104,12 +104,12 @@ def knight_move(from_sq, to_sq):
 	if abs(diff) in moves:
 		if from_sq//8 == to_sq//8:
 			return False
-		if from_sq%8 == to_sq%8:
-			return False
-		if ((from_sq%8) - (to_sq%8)) == 2 and abs((from_sq//2) - (to_sq//2)) == 1:
-			return True
-		if ((from_sq%8) - (to_sq%8)) == 1 and abs((from_sq//2) - (to_sq//2)) == 2:
-			return True
+		#if from_sq%8 == to_sq%8:
+		#	return False
+		#if ((from_sq%8) - (to_sq%8)) == 2 and abs((from_sq//2) - (to_sq//2)) == 1:
+		#	return True
+		#if ((from_sq%8) - (to_sq%8)) == 1 and abs((from_sq//2) - (to_sq//2)) == 2:
+		#	return True
 	return False
 
 def rook_move(from_sq, to_sq):
@@ -169,7 +169,9 @@ def make_move(board, move):
 
 	# bishop move
 	if abs(piece) == 2:
-		pass
+		if bishop_move(from_sq, to_sq) is False:
+			print("Invalid move.")
+			return
 
 	# knight move
 	if abs(piece) == 3:
@@ -198,7 +200,7 @@ def make_move(board, move):
 
 while True:
 	#print("\033[2J\033[H")
-	os.system("clear")
+	#os.system("clear")
 	print_board(board)
 
 	if current_turn == 1:
