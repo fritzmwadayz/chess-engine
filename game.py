@@ -109,7 +109,7 @@ def knight_move(from_sq, to_sq):
 		if ((from_sq%8) - (to_sq%8)) == 2 and abs((from_sq//2) - (to_sq//2)) == 1:
 			return True
 		if ((from_sq%8) - (to_sq%8)) == 1 and abs((from_sq//2) - (to_sq//2)) == 2:
-			return True
+		#	return True
 	return False
 
 def rook_move(from_sq, to_sq):
