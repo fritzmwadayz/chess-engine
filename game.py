@@ -114,9 +114,13 @@ def knight_move(from_sq, to_sq):
 
 def rook_move(from_sq, to_sq):
 	moves = {1,8}
+	if move in moves:
+		pass
 
 def queen_move(from_sq, to_sq):
 	moves = {1,7,8,9}
+	if move in moves:
+		pass
 
 def king_move(from_sq, to_sq):
 	pass
@@ -165,7 +169,13 @@ def make_move(board, move):
 			print("You've reached a promotion square")
 			print("What piece do you want?")
 			print("Enter 2 for bishop\n 3 for knight\n 4 for rook\n or 5 for queen")
-			board[from_sq] = int(input("Choice:"))
+			new_piece = int(input("Choice:"))
+			
+			while new_piece not in range(2, 6):
+				print("Invalid choice try again.")
+				print("Enter 2 for bishop\n 3 for knight\n 4 for rook\n or 5 for queen")
+				new_piece = int(input("Choice:"))
+			board[from_sq] = new_piece * piece
 
 	# bishop move
 	if abs(piece) == 2:
