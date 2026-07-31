@@ -90,13 +90,29 @@ def pawn_move(from_sq, to_sq):
 	return False
 
 def bishop_move(from_sq, to_sq):
-	moves = {7,9}
-
-	if from_sq//8 == to_sq//8:
-		return False
-
-	if from_sq%8 == to_sq%8:
-		return False
+	moves = (7,9)
+	diff = to_sq - from_sq
+	print(f"from={from_sq}, to={to_sq}, diff={diff}")
+	for move in moves:
+		print(f"Trying direction magnitude {move}")
+		if diff%move == 0:
+			direction = move if to_sq >= from_sq else -move
+			squares = list(range(from_sq, to_sq+(1 if direction > 0 else -1), direction))
+			squares = squares[1:-1]
+			print(f"Path: {squares}")
+			for entry in squares:
+				print(f"Checking {entry}: {board[entry]}")
+				if board[entry] != EMPTY: # if intermediate square occupied move is illegal
+					print("Check 2")
+					return False
+			if board[to_sq] == 0:
+				return True
+			# block friendly capture
+			if board[to_sq] != EMPTY:
+				if board[to_sq] * board[from_sq] > 0:
+					return False
+				return True
+			return False
 
 def knight_move(from_sq, to_sq):
 	moves = {6,10,15,17}
@@ -109,21 +125,26 @@ def knight_move(from_sq, to_sq):
 		if ((from_sq%8) - (to_sq%8)) == 2 and abs((from_sq//2) - (to_sq//2)) == 1:
 			return True
 		if ((from_sq%8) - (to_sq%8)) == 1 and abs((from_sq//2) - (to_sq//2)) == 2:
-		#	return True
+			return True
 	return False
 
 def rook_move(from_sq, to_sq):
 	moves = {1,8}
-	if move in moves:
+	diff = to_sq - from_sq
+	if abs(diff) in moves:
 		pass
 
 def queen_move(from_sq, to_sq):
 	moves = {1,7,8,9}
-	if move in moves:
+	diff = to_sq - from_sq
+	if diff in moves:
 		pass
 
 def king_move(from_sq, to_sq):
-	pass
+	moves = {1,7,8}
+	diff = to_sq - from_sq
+	if abs(diff) in moves:
+		pass
 
 board = [
 	WR, WN, WB, WQ, WK, WB, WN, WR,
@@ -178,13 +199,13 @@ def make_move(board, move):
 			board[from_sq] = new_piece * piece
 
 	# bishop move
-	if abs(piece) == 2:
+	if abs(piece) == 3:
 		if bishop_move(from_sq, to_sq) is False:
 			print("Invalid move.")
 			return
 
 	# knight move
-	if abs(piece) == 3:
+	if abs(piece) == 2:
 		if knight_move(from_sq, to_sq) is False:
 			print("Invalid move.")
 			return
