@@ -89,13 +89,15 @@ def pawn_move(from_sq, to_sq):
 				return board[to_sq] < 0
 	return False
 
+# knight move
 def knight_move(from_sq, to_sq):
-	if ((from_sq%8) - (to_sq%8)) == 2 and abs((from_sq//8) - (to_sq//8)) == 1:
+	if abs((from_sq%8) - (to_sq%8)) == 2 and abs((from_sq//8) - (to_sq//8)) == 1:
 		return True
-	if ((from_sq%8) - (to_sq%8)) == 1 and abs((from_sq//8) - (to_sq//8)) == 2:
+	if abs((from_sq%8) - (to_sq%8)) == 1 and abs((from_sq//8) - (to_sq//8)) == 2:
 		return True
 	return False
 
+# bishop move
 def bishop_move(from_sq, to_sq):
 	moves = (7,9)
 	diff = to_sq - from_sq
@@ -115,24 +117,39 @@ def bishop_move(from_sq, to_sq):
 					return False
 				return True
 			return False
+	return False
 
+# rook move
 def rook_move(from_sq, to_sq):
 	moves = {1,8}
 	diff = to_sq - from_sq
-	if abs(diff) in moves:
-		pass
+	for move in moves:
+		if abs(diff%move) == 0:
+			direction = move if to_sq >= from_sq else -move
+			squares = list(range(from_sq, to_sq+(1 if direction > 0 else -1), direction))
+			squares = squares[1:-1]
+			for entry in squares:
+				if board[entry] != EMPTY: # if intermediate square occupied move is illegal
+					return False
+			if board[to_sq] == 0:
+				return True
+			# block friendly capture
+			if board[to_sq] != EMPTY:
+				if board[to_sq] * board[from_sq] > 0:
+					return False
+				return True
+			return False
 
+# queen move
 def queen_move(from_sq, to_sq):
-	moves = {1,7,8,9}
-	diff = to_sq - from_sq
-	if diff in moves:
-		pass
+	return bishop_move(from_sq, to_sq) or rook_move(from_sq, to_sq)
 
+# king move
 def king_move(from_sq, to_sq):
-	moves = {1,7,8}
-	diff = to_sq - from_sq
-	if abs(diff) in moves:
-		pass
+	file_diff = abs(from_file - to_file)
+	rank_diff = abs(from_rank - to_rank)
+
+	return max(file_diff, rank_diff) == 1
 
 board = [
 	WR, WN, WB, WQ, WK, WB, WN, WR,
@@ -200,15 +217,21 @@ def make_move(board, move):
 
 	# rook move
 	if abs(piece) == 4:
-		pass
+		if rook_move(from_sq, to_sq) is False:
+			print("Invalid move.")
+			return
 
 	# queen move
 	if abs(piece) == 5:
-		pass
+		if queen_move(from_sq, to_sq) is False:
+			print("Invalid move.")
+			return
 
 	# king move
 	if abs(piece) == 6:
-		pass
+		if king_move(from_sq, to_sq) is False:
+			print("Invalid move.")
+			return
 
 	board[to_sq] = board[from_sq]
 	board[from_sq] = EMPTY
