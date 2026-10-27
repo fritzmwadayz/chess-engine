@@ -91,13 +91,13 @@ def piece_attacks(board, sq):
     piece = board[sq]
     kind = abs(piece)
     color = 1 if piece > 0 else -1
-    f, r = sq % 8, sq // 8
+    f, r = sq % 8, sq // 8 # f -> file; r -> rank
     out = []
 
     if kind == 1:  # pawns attack diagonally forward only
-        nr = r + color
-        for df in (-1, 1):
-            nf = f + df
+        nr = r + color # nf -> new file
+        for df in (-1, 1): # df -> direction (file); dr -> direction (rank)
+            nf = f + df # nf -> new file
             if 0 <= nf < 8 and 0 <= nr < 8:
                 out.append(nr * 8 + nf)
     elif kind in (2, 6):
@@ -295,52 +295,70 @@ def game_status(state):
         return "draw"
     return "check" if checked else "ongoing"
 
-
-# user-facing API
 def parse_square(name):
     if len(name) != 2 or name[0] not in "abcdefgh" or name[1] not in "12345678":
         return None
     return (int(name[1]) - 1) * 8 + (ord(name[0]) - ord("a"))
 
+def square_name(sq):
+    return "abcdefgh"[sq % 8] + str(sq // 8 + 1)
 
-def make_move(state, text):
+def move_to_text(move):
+    """(from, to, promo) -> 'e2 e4' / 'e7 e8 q'. Handy for logging engine moves."""
+    from_sq, to_sq, promo = move
+    text = f"{square_name(from_sq)} {square_name(to_sq)}"
+    if promo is not None:
+        text += " " + "?nbrq"[promo - 1]
+    return text
+
+def parse_move(state, text):
     """
-    Try to play a move like 'e2 e4' (or 'e7 e8 q' for promotion).
-    Returns (status, state):
-      'invalid_input'  - couldn't parse, state unchanged
-      'illegal'        - parsed but not a legal move, state unchanged
-      'need_promotion' - legal pawn move to last rank, but no piece given
-      'ok'             - move played, state is the NEW state
+    Turn user text like 'e2 e4' (or 'e7 e8 q') into a legal move tuple.
+    Returns (status, move):
+      'invalid_input'  - couldn't parse
+      'illegal'        - parsed but not legal
+      'need_promotion' - legal pawn move to last rank, no piece given
+      'ok'             - move is the legal move tuple
     """
     parts = text.split()
     if len(parts) not in (2, 3):
-        return "invalid_input", state
+        return "invalid_input", None
 
     from_sq, to_sq = parse_square(parts[0]), parse_square(parts[1])
     if from_sq is None or to_sq is None:
-        return "invalid_input", state
+        return "invalid_input", None
 
     promo = None
     if len(parts) == 3:
         promo = PROMO_LETTERS.get(parts[2].lower())
         if promo is None:
-            return "invalid_input", state
+            return "invalid_input", None
 
     candidates = [m for m in legal_moves(state) if m[0] == from_sq and m[1] == to_sq]
     if not candidates:
-        return "illegal", state
+        return "illegal", None
 
     if promo is None and candidates[0][2] is not None:
-        return "need_promotion", state
+        return "need_promotion", None
 
     chosen = [m for m in candidates if m[2] == promo]
     if not chosen:
-        return "illegal", state
+        return "illegal", None
+    return "ok", chosen[0]
 
-    #return "ok", apply_move(state, chosen[0])
-    new = apply_move(state, chosen[0])
+def play_move(state, move):
+    """Commit a legal move tuple for real. Returns the NEW state (records repetition).
+    Engines use apply_move() while searching and play_move() only for the final choice."""
+    new = apply_move(state, move)
     counts = dict(state["position_counts"])   # copy once per real move
     key = position_key(new)
     counts[key] = counts.get(key, 0) + 1
     new["position_counts"] = counts
-    return "ok", new
+    return new
+
+def make_move(state, text):
+    """Text convenience wrapper: returns (status, state)."""
+    status, move = parse_move(state, text)
+    if status != "ok":
+        return status, state
+    return "ok", play_move(state, move)

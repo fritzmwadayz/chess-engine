@@ -1,10 +1,10 @@
 # ui.py
 '''
-Interaction layer between player and the chess board.
-Renders the board, reads moves as text, and reports what board.py says.
+Everything a human needs: rendering the board and a HumanPlayer
+that turns typed text into a move.
 '''
-from board import new_state, make_move, game_status, EMPTY, \
-    WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, position_key
+from board import parse_move, EMPTY, \
+    WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK
 
 PIECE_SYMBOLS = {
     EMPTY: " ",
@@ -39,61 +39,25 @@ def ask_promotion():
         print("Invalid choice, try again.")
 
 
-def main():
-    state = new_state()
+class HumanPlayer:
+    """Player interface: get_move(state) -> move tuple, or None to quit."""
 
-    while True:
-        print_board(state["board"])
-        status = game_status(state)
-        side = "White" if state["side"] == 1 else "Black"
-        winner = "Black" if state["side"] == 1 else "White"
+    def __init__(self, name="Human"):
+        self.name = name
 
-        if status == "checkmate":
-            print(f"Checkmate! {winner} wins.")
-            break
-        if status == "stalemate":
-            print("Draw by stalemate.")
-            break
-        if state["position_counts"].get(position_key(state), 0) >= 3:
-        	claim = input("Threefold repetition, claim draw? y/n")
-        	if claim == 'y':
-        	    print("Draw by threefold repetition.")
-                break
-            #continue
-        if state["position_counts"].get(position_key(state), 0) >= 5:
-            print("Draw by fivefold repetition.")
-            break
-        if status == "draw":
-            print("Draw (fifty-move rule or insufficient material).")
-            break
+    def get_move(self, state):
+        while True:
+            command = input("Chess> ").strip()
+            if command == "quit":
+                return None
 
-        #if not legal_moves(state):
-        #    return "checkmate" if checked else "stalemate"
+            status, move = parse_move(state, command)
+            if status == "need_promotion":
+                status, move = parse_move(state, command + " " + ask_promotion())
 
-        #if state["halfmove"] >= 100 or insufficient_material(state["board"]):
-        #    return "draw"
-
-        if status == "check":
-            print("Check!")
-
-        print(f"{side} to move")
-        command = input("Chess> ").strip()
-
-        if command == "quit":
-            break
-
-        result, new_state_ = make_move(state, command)
-
-        if result == "need_promotion":
-            result, new_state_ = make_move(state, command + " " + ask_promotion())
-
-        if result == "invalid_input":
-            print("Invalid input. Use the form: e2 e4")
-        elif result == "illegal":
-            print("Illegal move.")
-        else:
-            state = new_state_
-
-
-if __name__ == "__main__":
-    main()
+            if status == "ok":
+                return move
+            if status == "invalid_input":
+                print("Couldn't read that. Use the form: e2 e4")
+            else:
+                print("Illegal move.")
